@@ -1,16 +1,23 @@
 import torch
 from tqdm import tqdm
-from utils.metrics import dice_score, iou_score
+from utils.metrics import calculate_metrics
 from config import cfg
 
 def train_one_epoch(model, loader, loss_fn, optimizer, device):
     model.train()
-    total_loss = 0
-    for img, mask in tqdm(loader):
+    total_loss = 0.0
+    for img, mask in tqdm(loader, desc="Training", leave=False):
         img, mask = img.to(device), mask.to(device)
         optimizer.zero_grad()
-        pred = model(img)
-        loss = loss_fn(pred, mask)
+        out = model(img)
+
+        if isinstance(out, (list, tuple)):
+            loss = 0
+            for o in out:
+                loss += loss_fn(o, mask)
+        else:
+            loss = loss_fn(out, mask)
+
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
@@ -19,16 +26,22 @@ def train_one_epoch(model, loader, loss_fn, optimizer, device):
 @torch.no_grad()
 def validate(model, loader, loss_fn, device):
     model.eval()
-    total_loss = 0
-    total_dice = 0
-    total_iou = 0
+    total_loss = 0.0
+    total_dice = 0.0
+    total_iou = 0.0
+    total_pre = 0.0
+    total_rec = 0.0
+    cnt = len(loader)
+
     for img, mask in loader:
         img, mask = img.to(device), mask.to(device)
-        pred = model(img)
-        loss = loss_fn(pred, mask)
+        out = model(img)
+        loss = loss_fn(out, mask)
         total_loss += loss.item()
-        total_dice += dice_score(pred, mask).item()
-        total_iou += iou_score(pred, mask).item()
-    return (total_loss/len(loader),
-            total_dice/len(loader),
-            total_iou/len(loader))
+        d, i, p, r = calculate_metrics(out, mask)
+        total_dice += d
+        total_iou += i
+        total_pre += p
+        total_rec += r
+
+    return total_loss/cnt, total_dice/cnt, total_iou/cnt, total_pre/cnt, total_rec/cnt
