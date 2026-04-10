@@ -11,8 +11,6 @@ from data.dataset import KvasirDataset
 from losses.loss_factory import get_loss
 from torch.utils.data import DataLoader
 
-
-# 固定随机种子
 def set_seed(seed=42):
     random.seed(seed)
     np.random.seed(seed)
@@ -21,15 +19,11 @@ def set_seed(seed=42):
 
 set_seed(cfg.SEED)
 
-
-# 统计模型参数量
 def count_parameters(model):
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     return total_params, trainable_params
 
-
-# ==================== 四项指标计算 ====================
 def calculate_metrics(pred, mask, smooth=1e-6):
     pred = torch.sigmoid(pred)
     pred = (pred > 0.5).float()
@@ -46,8 +40,6 @@ def calculate_metrics(pred, mask, smooth=1e-6):
     return dice.item(), iou.item(), precision.item(), recall.item()
 
 
-# ==================== 训练单轮函数 ====================
-# 🔥 这里已修改，支持 Deep Supervision
 def train_one_epoch(model, loader, loss_fn, optimizer, device):
     model.train()
     total_loss = 0.0
@@ -69,8 +61,6 @@ def train_one_epoch(model, loader, loss_fn, optimizer, device):
         total_loss += loss.item()
     return total_loss / len(loader)
 
-
-# ==================== 验证函数（支持4项指标） ====================
 def validate(model, loader, loss_fn, device):
     model.eval()
     total_loss = 0.0
@@ -99,12 +89,6 @@ def validate(model, loader, loss_fn, device):
             total_pre / cnt,
             total_rec / cnt)
 
-
-# ==============================================
-# 【第一步：数据加载与划分】
-# ==============================================
-# 1. 加载基础数据（训练+验证）
-# ✅ 已修改：路径指向统一整理后的 Kvasir 文件夹
 kvasir_img = sorted(glob.glob(os.path.join("./data/Kvasir/images", "*.jpg")))
 kvasir_mask = sorted(glob.glob(os.path.join("./data/Kvasir/masks", "*.jpg")))
 
@@ -129,13 +113,9 @@ test_mask_etis = sorted(glob.glob("./data/ETIS-LaribPolypDB/masks/*.png"))
 test_img_cvc = sorted(glob.glob("./data/CVC-ColonDB/images/*.png"))
 test_mask_cvc = sorted(glob.glob("./data/CVC-ColonDB/masks/*.png"))
 
-# ==============================================
-# 数据集加载
-# ==============================================
 train_ds = KvasirDataset(train_img, train_mask, augment=True)
 val_ds = KvasirDataset(val_img, val_mask, augment=False)
 
-# 测试集不 shuffle，保证顺序
 test_ds_etis = KvasirDataset(test_img_etis, test_mask_etis, augment=False)
 test_ds_cvc = KvasirDataset(test_img_cvc, test_mask_cvc, augment=False)
 
@@ -146,10 +126,6 @@ val_loader = DataLoader(val_ds, batch_size=1, shuffle=False, num_workers=cfg.NUM
 test_loader_etis = DataLoader(test_ds_etis, batch_size=1, shuffle=False, num_workers=cfg.NUM_WORKERS)
 test_loader_cvc = DataLoader(test_ds_cvc, batch_size=1, shuffle=False, num_workers=cfg.NUM_WORKERS)
 
-
-# ==============================================
-# 模型构建
-# ==============================================
 def build_model(name):
     if name == "unet":
         from models.unet import UNet
@@ -167,16 +143,11 @@ def build_model(name):
         from models.resunetpp_transformer import ResUNetPPTransformer
         return ResUNetPPTransformer()
 
-
-# ==============================================
-# 【核心训练逻辑】
-# ==============================================
 results = []
 all_val_loss = []
 all_val_dice = []
 
 for model_name in cfg.MODEL_NAMES:
-    # ==================== 🔥 这里已强制改为 dice_bce ====================
     loss_type = "dice_bce"
 
     print(f"\n===== {model_name} | {loss_type} =====")
@@ -223,18 +194,15 @@ for model_name in cfg.MODEL_NAMES:
     all_val_dice.append(val_dice_history)
     pd.DataFrame(results).to_csv(os.path.join(cfg.SAVE_DIR, "train_results.csv"), index=False)
 
-# ==================== 【最终双测试集全面评估】 ====================
 print("\n" + "=" * 80)
 print(" 🔥  最终评估：双独立测试集综合验证 🔥")
 print("=" * 80)
 
 
-# 定义通用测试函数
 def test_general_dataset(loader, model_name, loss_type, device):
     model = build_model(model_name).to(device)
     weight_path = os.path.join(cfg.WEIGHTS_DIR, f"{model_name}_{loss_type}.pth")
 
-    # 处理可能的权重文件不存在情况（兼容你之前的训练）
     if not os.path.exists(weight_path):
         print(f"⚠️  警告：未找到 {model_name} 权重，跳过测试！")
         return None
@@ -262,11 +230,9 @@ def test_general_dataset(loader, model_name, loss_type, device):
         "recall": round(total_rec / cnt, 4)
     }
 
-
-# 执行测试
 final_results = []
 for model_name in cfg.MODEL_NAMES:
-    loss_type = "dice_bce"  # 🔥 统一用你的loss
+    loss_type = "dice_bce"
 
     print(f"\n>>> Testing {model_name} ...")
 
@@ -290,7 +256,6 @@ df_final = pd.DataFrame(final_results)
 df_final.to_csv(os.path.join(cfg.SAVE_DIR, "final_test_results.csv"), index=False)
 print("\n✅ 最终测试结果已保存至 final_test_results.csv")
 
-# ==================== 绘图：Loss & Dice 曲线 ====================
 if all_val_loss:
     plt.figure(figsize=(10, 5))
     for i, label in enumerate(cfg.MODEL_NAMES):
