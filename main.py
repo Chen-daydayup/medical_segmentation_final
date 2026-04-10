@@ -48,7 +48,6 @@ def train_one_epoch(model, loader, loss_fn, optimizer, device):
         optimizer.zero_grad()
         out = model(img)
 
-        # 🔥 深度监督：多输出损失计算
         if isinstance(out, (list, tuple)):
             loss = 0
             for o in out:
@@ -109,7 +108,7 @@ train_img, val_img, train_mask, val_mask = train_test_split(
 test_img_etis = sorted(glob.glob("./data/ETIS-LaribPolypDB/images/*.png"))
 test_mask_etis = sorted(glob.glob("./data/ETIS-LaribPolypDB/masks/*.png"))
 
-# 4. 【新增】加载第二个独立测试集：CVC-ColonDB
+# 4. 加载第二个独立测试集：CVC-ColonDB
 test_img_cvc = sorted(glob.glob("./data/CVC-ColonDB/images/*.png"))
 test_mask_cvc = sorted(glob.glob("./data/CVC-ColonDB/masks/*.png"))
 
