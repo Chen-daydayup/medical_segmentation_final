@@ -1,6 +1,6 @@
 model,params(M),best_val_dice,best_val_iou
-unet,4.9,0.8659,0.7922
-resunet,5.14,0.876,0.8003
-unetpp,6.21,0.8748,0.8023
-resunetpp,6.57,0.8751,0.801
-resunetpp_transformer,8.28,0.9036,0.8387
+unet,4.9,0.868,0.7928
+resunet,5.14,0.8807,0.8074
+unetpp,6.21,0.8718,0.7966
+resunetpp,6.57,0.8774,0.804
+resunetpp_transformer,8.28,0.9004,0.8342
