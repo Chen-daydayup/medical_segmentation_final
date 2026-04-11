@@ -114,7 +114,6 @@ python visualize.py
 | 高级分割模型 | ResUNet++ |
 | 本文改进模型 | ResUNet++-Transformer（瓶颈Transformer+深度监督） |
 | 损失函数 | Dice-BCE混合损失 |
-| 优化器 | AdamW |
 | 评估指标 | Dice、IoU、Recall |
 | 训练策略 | 固定随机种子、验证集最优保存、深度监督训练 |
 
