@@ -112,10 +112,10 @@ python visualize.py
 | 残差增强模型 | ResUNet |
 | 密集连接模型 | UNet++ |
 | 高级分割模型 | ResUNet++ |
-| 本文改进模型 | ResUNet++-Transformer（瓶颈Transformer+深度监督） |
+| 本文改进模型 | ResUNet++-Transformer（瓶颈Transformer） |
 | 损失函数 | Dice-BCE混合损失 |
 | 评估指标 | Dice、IoU、Recall |
-| 训练策略 | 固定随机种子、验证集最优保存、深度监督训练 |
+| 训练策略 | 固定随机种子、验证集最优保存 |
 
 ---
 
@@ -200,7 +200,7 @@ medical_segmentation_final/
 
 ### 4. 分割对比图示例
 为直观展示各模型的分割效果，选取ETIS-LaribPolypDB测试集典型样本，对比UNet、ResUNet++与ResUNet++-Transformer三种模型的分割结果，如下所示：
-![ETIS分割对比图](results/etis_comparison/etis_3model_rand_03.png)
+![ETIS分割对比图](results/etis_comparison/etis_3model_rand_17.png)
 
 
 ---
