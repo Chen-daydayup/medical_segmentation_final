@@ -200,7 +200,7 @@ medical_segmentation_final/
 
 ### 4. 分割对比图示例
 为直观展示各模型的分割效果，选取ETIS-LaribPolypDB测试集典型样本，对比UNet、ResUNet++与ResUNet++-Transformer三种模型的分割结果，如下所示：
-![ETIS分割对比图](results/etis_comparison/etis_3model_rand_17.png)
+![ETIS分割对比图](results/etis_comparison/etis_3model_rand_04.png)
 
 
 ---
